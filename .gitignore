@@ -1,4 +1,4 @@
-#*.iml
+*.iml
 .gradle
 .externalNativeBuild
 /local.properties
@@ -12,4 +12,4 @@
 /.gradle
 /gradle
 /zzaz
-
+/.idea/modules.xml
