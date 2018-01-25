@@ -156,8 +156,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         playerShip = new PlayerShip(context, screenX, screenY);
 
         // Prepare the players bullet
+        bullet = new Bullet(screenY);
 
         // Initialize the invadersBullets array
+        for(int i = 0; i < invadersBullets.length; i++){
+            invadersBullets[i] = new Bullet(screenY);
+        }
 
         // Build an army of invaders
 
@@ -205,6 +209,11 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         // Update the invaders if visible
 
         // Update all the invaders bullets if active
+        for(int i = 0; i < invadersBullets.length; i++){
+            if(invadersBullets[i].getStatus()) {
+                invadersBullets[i].update(fps);
+            }
+        }
 
         // Did an invader bump into the edge of the screen
 
@@ -213,9 +222,14 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
 
         // Update the players bullet
+        if(bullet.getStatus()){
+            bullet.update(fps);
+        }
 
         // Has the player's bullet hit the top of the screen
-
+        if(bullet.getImpactPointY() < 0){
+            bullet.setInactive();
+        }
         // Has an invaders bullet hit the bottom of the screen
 
         // Has the player's bullet hit an invader
@@ -248,9 +262,16 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Draw the bricks if visible
 
             // Draw the players bullet if active
-
+            if(bullet.getStatus()){
+                canvas.drawRect(bullet.getRect(), paint);
+            }
             // Draw the invaders bullets if active
-
+            // Update all the invader's bullets if active
+            for(int i = 0; i < invadersBullets.length; i++){
+                if(invadersBullets[i].getStatus()) {
+                    canvas.drawRect(invadersBullets[i].getRect(), paint);
+                }
+            }
             // Draw the score and remaining lives
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
@@ -291,11 +312,31 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
             // Player has touched the screen
             case MotionEvent.ACTION_DOWN:
+                paused = false;
 
+                if(motionEvent.getY() > screenY - screenY / 8) {
+                    if (motionEvent.getX() > screenX / 2) {
+                        playerShip.setMovementState(playerShip.RIGHT);
+                    } else {
+                        playerShip.setMovementState(playerShip.LEFT);
+                    }
+
+                }
+
+                if(motionEvent.getY() < screenY - screenY / 8) {
+                    // Shots fired
+                    if(bullet.shoot(playerShip.getX()+
+                            playerShip.getLength()/2,screenY,bullet.UP)){
+                        soundPool.play(shootID, 1, 1, 0, 0, 1);
+                    }
+                }
                 break;
-
             // Player has removed finger from screen
             case MotionEvent.ACTION_UP:
+
+                if(motionEvent.getY() > screenY - screenY / 10) {
+                    playerShip.setMovementState(playerShip.STOPPED);
+                }
 
                 break;
         }
