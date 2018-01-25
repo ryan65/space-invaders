@@ -13,3 +13,5 @@
 /gradle
 /app/*.iml
 /.idea/modules.xml
+SpaceInvaders.iml
+/app/build.gradle
