@@ -12,4 +12,4 @@
 /.gradle
 /gradle
 /app/*.iml
-.idea/modules.xml
+/.idea/modules.xml
