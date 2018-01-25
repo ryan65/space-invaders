@@ -83,6 +83,10 @@ public class PlayerShip {
         return length;
     }
 
+    public float getHeight(){
+        return height;
+    }
+
     // This method will be used to change/set if the ship is going left, right or nowhere
     public void setMovementState(int state){
         shipMoving = state;

@@ -2,6 +2,8 @@ package com.example.hardoon.spaceinvaders;
 
 import android.graphics.RectF;
 
+import java.util.logging.Logger;
+
 /**
  * Created by hardoon on 1/23/2018.
  */
@@ -20,14 +22,14 @@ public class Bullet {
     int heading = -1;
     float speed =  350;
 
-    private int width = 1;
-    private int height;
+    private int width = 5;
+    private int height = width *2;
 
     private boolean isActive;
 
     public Bullet(int screenY) {
 
-        height = screenY / 20;
+        //height = screenY / 40;
         isActive = false;
 
         rect = new RectF();

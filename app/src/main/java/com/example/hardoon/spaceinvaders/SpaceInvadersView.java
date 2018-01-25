@@ -166,7 +166,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         // Build an army of invaders
 
         // Build the shelters
-
     }
     @Override
     public void run() {
@@ -325,8 +324,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
                 if(motionEvent.getY() < screenY - screenY / 8) {
                     // Shots fired
+                    Log.d("SpaceInvadersView","Action Down");
                     if(bullet.shoot(playerShip.getX()+
-                            playerShip.getLength()/2,screenY,bullet.UP)){
+                            playerShip.getLength()/2,screenY - playerShip.getHeight(),bullet.UP)){
                         soundPool.play(shootID, 1, 1, 0, 0, 1);
                     }
                 }
