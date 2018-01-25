@@ -21,8 +21,9 @@ import java.io.IOException;
 
 public class SpaceInvadersView  extends SurfaceView implements Runnable{
     Context context;
-    
 
+    //max number of bullets that can be shot together
+    private static final int NUM_OF_SHIP_BULLETS = 3;
     // This is our thread
     private Thread gameThread = null;
 
@@ -54,7 +55,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private PlayerShip playerShip;
 
     // The player's bullet
-    private Bullet bullet;
+    private Bullet[] shipBullets = new Bullet[NUM_OF_SHIP_BULLETS];
 
     // The invaders bullets
     private Bullet[] invadersBullets = new Bullet[200];
@@ -155,8 +156,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         // Make a new player space ship
         playerShip = new PlayerShip(context, screenX, screenY);
 
-        // Prepare the players bullet
-        bullet = new Bullet(screenY);
+        // Initialize the shipBullets array
+        for(int i = 0; i < shipBullets.length; i++){
+            shipBullets[i] = new Bullet(screenY);
+        }
 
         // Initialize the invadersBullets array
         for(int i = 0; i < invadersBullets.length; i++){
@@ -220,14 +223,15 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             prepareLevel();
         }
 
-        // Update the players bullet
-        if(bullet.getStatus()){
-            bullet.update(fps);
-        }
-
-        // Has the player's bullet hit the top of the screen
-        if(bullet.getImpactPointY() < 0){
-            bullet.setInactive();
+        for(int i = 0; i < shipBullets.length; i++){
+            Bullet currBullet = shipBullets[i];
+            if(currBullet.getStatus()) {
+                currBullet.update(fps);
+            }
+            // Has the player's bullet hit the top of the screen
+            if(currBullet.getImpactPointY() < 0){
+                currBullet.setInactive();
+            }
         }
         // Has an invaders bullet hit the bottom of the screen
 
@@ -261,8 +265,11 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Draw the bricks if visible
 
             // Draw the players bullet if active
-            if(bullet.getStatus()){
-                canvas.drawRect(bullet.getRect(), paint);
+            for(int i = 0; i < shipBullets.length; i++){
+                Bullet currBullet = shipBullets[i];
+                if(currBullet.getStatus()){
+                    canvas.drawRect(currBullet.getRect(), paint);
+                }
             }
             // Draw the invaders bullets if active
             // Update all the invader's bullets if active
@@ -325,9 +332,15 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                 if(motionEvent.getY() < screenY - screenY / 8) {
                     // Shots fired
                     Log.d("SpaceInvadersView","Action Down");
-                    if(bullet.shoot(playerShip.getX()+
-                            playerShip.getLength()/2,screenY - playerShip.getHeight(),bullet.UP)){
-                        soundPool.play(shootID, 1, 1, 0, 0, 1);
+                    for(int i = 0; i <shipBullets.length ; i++){
+                        Bullet currBullet = shipBullets[i];
+                        //look for one bullet that can be shot and then break if shot.
+                        if(currBullet.shoot(playerShip.getX()+
+                                playerShip.getLength()/2,screenY - playerShip.getHeight(),currBullet.UP)){
+                            soundPool.play(shootID, 1, 1, 0, 0, 1);
+                            break;
+                        }
+
                     }
                 }
                 break;
