@@ -11,7 +11,7 @@
 /app/release/
 /.gradle
 /gradle
-/app/*.iml
+##/app/*.iml
 /.idea/modules.xml
 SpaceInvaders.iml
 /app/build.gradle
