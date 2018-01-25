@@ -11,5 +11,5 @@
 /app/release/
 /.gradle
 /gradle
-/zzaz
-/.idea/modules.xml
+/app/*.iml
+.idea/modules.xml
