@@ -309,6 +309,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         gameThread.start();
     }
 
+    public boolean isShipMoveLocation(float y){
+        return y > screenY - playerShip.getHeight();
+    }
     // The SurfaceView class implements onTouchListener
     // So we can override this method and detect screen touches.
     @Override
@@ -320,7 +323,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             case MotionEvent.ACTION_DOWN:
                 paused = false;
 
-                if(motionEvent.getY() > screenY - screenY / 8) {
+                if(isShipMoveLocation(motionEvent.getY())) {
                     if (motionEvent.getX() > screenX / 2) {
                         playerShip.setMovementState(playerShip.RIGHT);
                     } else {
@@ -328,8 +331,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                     }
 
                 }
-
-                if(motionEvent.getY() < screenY - screenY / 8) {
+                else { //pressed above ship , lets shoot bullets
                     // Shots fired
                     Log.d("SpaceInvadersView","Action Down");
                     for(int i = 0; i <shipBullets.length ; i++){
@@ -346,8 +348,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                 break;
             // Player has removed finger from screen
             case MotionEvent.ACTION_UP:
-
-                if(motionEvent.getY() > screenY - screenY / 10) {
+                if(isShipMoveLocation(motionEvent.getY())) {
                     playerShip.setMovementState(playerShip.STOPPED);
                 }
 

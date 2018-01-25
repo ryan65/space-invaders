@@ -35,12 +35,14 @@ public class PlayerShip {
 
     // Is the ship moving and in which direction
     private int shipMoving = STOPPED;
+    private int _screenX;
 
     // This the the constructor method
     // When we create an object from this class we will pass
     // in the screen width and height
     public PlayerShip(Context context, int screenX, int screenY){
 
+        _screenX = screenX;
         // Initialize a blank RectF
         rect = new RectF();
 
@@ -97,10 +99,12 @@ public class PlayerShip {
     public void update(long fps){
         if(shipMoving == LEFT){
             x = x - shipSpeed / fps;
+            x = Math.max(x,-length/2);
         }
 
         if(shipMoving == RIGHT){
             x = x + shipSpeed / fps;
+            x = Math.min(x,_screenX - length/2);
         }
 
         // Update rect which is used to detect hits
