@@ -282,7 +282,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
             paint.setTextSize(40);
-            canvas.drawText("ORR's Space 1. " + "Score: " + score + "   Lives: " + lives, 10,50, paint);
+            canvas.drawText("ORRO Space 4. " + "Score: " + score + "   Lives: " + lives, 10,50, paint);
 
             // Draw everything to the screen
             ourHolder.unlockCanvasAndPost(canvas);
@@ -316,14 +316,16 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // So we can override this method and detect screen touches.
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-
-        switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
-
+        float yPoint;
+        int maskedAction = motionEvent.getActionMasked();
+        switch (maskedAction) {
             // Player has touched the screen
             case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
                 paused = false;
-
-                if(isShipMoveLocation(motionEvent.getY())) {
+                yPoint = motionEvent.getY(motionEvent.getActionIndex());
+                if(maskedAction == MotionEvent.ACTION_DOWN && isShipMoveLocation(yPoint)) {
+                    Log.d("SpaceInvadersView","Action Move ship");
                     if (motionEvent.getX() > screenX / 2) {
                         playerShip.setMovementState(playerShip.RIGHT);
                     } else {
@@ -331,9 +333,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                     }
 
                 }
-                else { //pressed above ship , lets shoot bullets
+                else if(!isShipMoveLocation(yPoint)){ //pressed above ship , lets shoot bullets
                     // Shots fired
-                    Log.d("SpaceInvadersView","Action Down");
+                    Log.d("SpaceInvadersView","Action Fire Bullet");
                     for(int i = 0; i <shipBullets.length ; i++){
                         Bullet currBullet = shipBullets[i];
                         //look for one bullet that can be shot and then break if shot.
