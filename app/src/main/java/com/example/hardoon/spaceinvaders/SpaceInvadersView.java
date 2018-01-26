@@ -167,9 +167,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                 e.commit();
             }
         }
+        paused = true;
         score = 0;
         lives = 3;
-        startTime = System.currentTimeMillis();
+        startTime = 0;
         // Here we will initialize all the game objects
         // Reset the menace level
         menaceInterval = 1000;
@@ -250,6 +251,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
     }
 
+    private void checkIfFirstDownForNewGame(){
+        if(paused){
+            startTime = System.currentTimeMillis();
+            paused = false;
+        }
+    }
     private void update(){
 
         // Did an invader bump into the side of the screen
@@ -346,7 +353,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
                             // Has the player won
                              if(score == numInvaders * 10){
-                                paused = true;
                                 prepareLevel(true);
                             }
                         }
@@ -395,7 +401,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                     soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
                     // Is it game over?
                     if(lives == 0){
-                        paused = true;
                         prepareLevel(false);
                     }
                 }
@@ -452,7 +457,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
             paint.setTextSize(60);
-            canvas.drawText("Points:" + score + "   Lives:" + lives + " Time:" + Math.round((System.currentTimeMillis() - startTime)/100)/10.0  + "     Best Time:" + Math.round(highScore/100)/10.0, 10,50, paint);
+            canvas.drawText("Points:" + score + "   Lives:" + lives + " Time:" + (startTime > 0 ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : 0) + "     Best Time:" + Math.round(highScore/100)/10.0, 10,50, paint);
             // Draw everything to the screen
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -491,7 +496,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Player has touched the screen
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-                paused = false;
+                checkIfFirstDownForNewGame();
                 yPoint = motionEvent.getY(motionEvent.getActionIndex());
                 if(maskedAction == MotionEvent.ACTION_DOWN && isShipMoveLocation(yPoint)) {
                     Log.d("SpaceInvadersView","Action Move ship");
