@@ -107,7 +107,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         // How kind.
         super(context);
         sharedPreferences = sP;
-        this.highScore = sharedPreferences.getLong("HighScore", 0);
+        this.highScore = sharedPreferences.getLong("FastestTime", 0);
         // Make a globally available copy of the context so we can use it in another method
         this.context = context;
 
@@ -163,7 +163,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             if(gameTime < highScore || highScore == 0){
                 highScore = gameTime;
                 SharedPreferences.Editor e = sharedPreferences.edit();
-                e.putLong("HighScore",highScore);
+                e.putLong("FastestTime",highScore);
                 e.commit();
             }
         }
@@ -452,7 +452,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
             paint.setTextSize(60);
-            canvas.drawText("ORRO Space 5. " + "Score: " + score + "   Lives: " + lives + "High Score: " + Math.round(highScore/1000) + " secs" , 10,50, paint);
+            canvas.drawText("Points:" + score + "   Lives:" + lives + " Time:" + Math.round((System.currentTimeMillis() - startTime)/100)/10.0  + "     Best Time:" + Math.round(highScore/100)/10.0, 10,50, paint);
             // Draw everything to the screen
             ourHolder.unlockCanvasAndPost(canvas);
         }
