@@ -1,6 +1,7 @@
 package com.example.hardoon.spaceinvaders;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.graphics.Canvas;
@@ -9,6 +10,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.media.AudioManager;
 import android.media.SoundPool;
+import android.support.annotation.RequiresPermission;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -92,16 +94,20 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private boolean uhOrOh;
     // When did we last play a menacing sound
     private long lastMenaceTime = System.currentTimeMillis();
+    private long highScore;
+    private SharedPreferences sharedPreferences;
+    private long startTime = 0;
 
     // When the we initialize (call new()) on gameView
 // This special constructor method runs
-    public SpaceInvadersView(Context context, int x, int y) {
+    public SpaceInvadersView(Context context, int x, int y, SharedPreferences sP) {
 
         // The next line of code asks the
         // SurfaceView class to set up our object.
         // How kind.
         super(context);
-
+        sharedPreferences = sP;
+        this.highScore = sharedPreferences.getLong("HighScore", 0);
         // Make a globally available copy of the context so we can use it in another method
         this.context = context;
 
@@ -147,11 +153,23 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             Log.e("error", "failed to load sound files");
         }
 
-        prepareLevel();
+        prepareLevel(false);
     }
 
-    private void prepareLevel(){
+    private void prepareLevel(Boolean won){
 
+        if(won){
+            long gameTime = System.currentTimeMillis() - startTime;
+            if(gameTime < highScore || highScore == 0){
+                highScore = gameTime;
+                SharedPreferences.Editor e = sharedPreferences.edit();
+                e.putLong("HighScore",highScore);
+                e.commit();
+            }
+        }
+        score = 0;
+        lives = 3;
+        startTime = System.currentTimeMillis();
         // Here we will initialize all the game objects
         // Reset the menace level
         menaceInterval = 1000;
@@ -304,7 +322,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             menaceInterval = menaceInterval - 80;
         }
         if(lost){
-            prepareLevel();
+            prepareLevel(false);
         }
 
         for(int i = 0; i < shipBullets.length; i++){
@@ -327,11 +345,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                             score = score + 10;
 
                             // Has the player won
-                            if(score == numInvaders * 10){
+                             if(score == numInvaders * 10){
                                 paused = true;
-                                score = 0;
-                                lives = 3;
-                                prepareLevel();
+                                prepareLevel(true);
                             }
                         }
                     }
@@ -351,45 +367,36 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                 }
             }
         }
-        // Has an invaders bullet hit the bottom of the screen
+        //
         for(int i = 0; i < invadersBullets.length; i++){
-            if(invadersBullets[i].getImpactPointY() > screenY){
-                invadersBullets[i].setInactive();
+            //Has an invaders bullet hit the bottom of the screen
+            Bullet currBullet = invadersBullets[i];
+            if(currBullet.getImpactPointY() > screenY){
+                currBullet.setInactive();
             }
-        }
-        // Has the player's bullet hit an invader
-
-        // Has an alien bullet hit a shelter brick
-        for(int i = 0; i < invadersBullets.length; i++){
-            if(invadersBullets[i].getStatus()){
+            // Has an alien bullet hit a shelter brick
+            if(currBullet.getStatus()){
                 for(int j = 0; j < numBricks; j++){
                     if(bricks[j].getVisibility()){
-                        if(RectF.intersects(invadersBullets[i].getRect(), bricks[j].getRect())){
+                        if(RectF.intersects(currBullet.getRect(), bricks[j].getRect())){
                             // A collision has occurred
-                            invadersBullets[i].setInactive();
+                            currBullet.setInactive();
                             bricks[j].setInvisible();
                             soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
+                            break;
                         }
                     }
                 }
             }
-
-        }
-        // Has an invader bullet hit the player ship
-        for(int i = 0; i < invadersBullets.length; i++){
-            if(invadersBullets[i].getStatus()){
-                if(RectF.intersects(playerShip.getRect(), invadersBullets[i].getRect())){
-                    invadersBullets[i].setInactive();
+            if(currBullet.getStatus()){
+                if(RectF.intersects(playerShip.getRect(), currBullet.getRect())){
+                    currBullet.setInactive();
                     lives --;
                     soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
-
                     // Is it game over?
                     if(lives == 0){
                         paused = true;
-                        lives = 3;
-                        score = 0;
-                        prepareLevel();
-
+                        prepareLevel(false);
                     }
                 }
             }
@@ -444,9 +451,8 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Draw the score and remaining lives
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
-            paint.setTextSize(40);
-            canvas.drawText("ORRO Space 4. " + "Score: " + score + "   Lives: " + lives, 10,50, paint);
-
+            paint.setTextSize(60);
+            canvas.drawText("ORRO Space 5. " + "Score: " + score + "   Lives: " + lives + "High Score: " + Math.round(highScore/1000) + " secs" , 10,50, paint);
             // Draw everything to the screen
             ourHolder.unlockCanvasAndPost(canvas);
         }

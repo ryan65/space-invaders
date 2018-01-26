@@ -1,5 +1,6 @@
 package com.example.hardoon.spaceinvaders;
 
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.app.Activity;
@@ -25,7 +26,8 @@ public class SpaceInvadersActivity extends Activity {
         Point size = new Point();
         display.getSize(size);
         // Initialize gameView and set it as the view
-        spaceInvadersView = new SpaceInvadersView(this, size.x, size.y);
+        SharedPreferences s = getPreferences(MODE_PRIVATE);
+        spaceInvadersView = new SpaceInvadersView(this, size.x, size.y,s);
         setContentView(spaceInvadersView);
     }
     // This method executes when the player starts the game
@@ -45,4 +47,5 @@ public class SpaceInvadersActivity extends Activity {
         // Tell the gameView pause method to execute
         spaceInvadersView.pause();
     }
+
 }
