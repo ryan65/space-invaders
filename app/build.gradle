@@ -4,7 +4,7 @@ android {
     signingConfigs {
         config {
             keyPassword '123456'
-            storeFile file('C:/Users/hardoon/.AndroidStudio3.0/apkkey123456.jks')
+            storeFile file('apkkey123456.jks')
             keyAlias 'key123456'
             storePassword '123456'
         }
