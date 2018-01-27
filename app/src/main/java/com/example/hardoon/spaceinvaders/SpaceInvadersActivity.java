@@ -65,7 +65,6 @@ public class SpaceInvadersActivity extends Activity {
                 level = Math.min(9,Math.max(1, level));
                 if(level != oldLevel){
                     SharedPreferences.Editor e = sharedPref.edit();
-                    e.putLong("FastestTime",0);
                     e.putInt("GameLevel",level);
                     e.commit();
                 }

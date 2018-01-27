@@ -95,7 +95,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private boolean uhOrOh;
     // When did we last play a menacing sound
     private long lastMenaceTime = System.currentTimeMillis();
-    private long highScore;
+    private long highScore = 0;
     private SharedPreferences sharedPreferences;
     private long startTime = 0;
 
@@ -108,7 +108,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         // How kind.
         super(context);
         sharedPreferences = sP;
-        this.highScore = sharedPreferences.getLong("FastestTime", 0);
         // Make a globally available copy of the context so we can use it in another method
         this.context = context;
 
@@ -164,7 +163,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             if(gameTime < highScore || highScore == 0){
                 highScore = gameTime;
                 SharedPreferences.Editor e = sharedPreferences.edit();
-                e.putLong("FastestTime",highScore);
+                e.putLong("FastestTime"+gameLevel,highScore);
                 e.commit();
             }
         }
@@ -209,6 +208,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     }
     public void startGame(int level){
         gameLevel = level;
+        this.highScore = sharedPreferences.getLong("FastestTime"+gameLevel, 0);
     }
 
     @Override
