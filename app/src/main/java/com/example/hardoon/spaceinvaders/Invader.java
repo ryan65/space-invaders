@@ -132,7 +132,7 @@ public class Invader {
 
         shipSpeed = shipSpeed * 1.18f;
     }
-    public boolean takeAim(float playerShipX, float playerShipLength){
+    public boolean takeAim(float playerShipX, float playerShipLength, int level){
 
         int randomNumber = -1;
 
@@ -140,8 +140,8 @@ public class Invader {
         if((playerShipX + playerShipLength > x &&
                 playerShipX + playerShipLength < x + length) || (playerShipX > x && playerShipX < x + length)) {
 
-            // A 1 in 500 chance to shoot
-            randomNumber = generator.nextInt(150);
+            int shootChance = (int)Math.round(70 * (9.0 / level));
+            randomNumber = generator.nextInt(shootChance);
             if(randomNumber == 0) {
                 return true;
             }
@@ -149,7 +149,8 @@ public class Invader {
         }
 
         // If firing randomly (not near the player) a 1 in 5000 chance
-        randomNumber = generator.nextInt(2000);
+        int notNearPlayer = (int)Math.round(900 * (9.0 / level));
+        randomNumber = generator.nextInt(notNearPlayer);
         if(randomNumber == 0){
             return true;
         }

@@ -81,6 +81,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private int damageShelterID = -1;
     private int uhID = -1;
     private int ohID = -1;
+    private int gameLevel = 0;
 
     // The score
     int score = 0;
@@ -206,6 +207,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             }
         }
     }
+    public void startGame(int level){
+        gameLevel = level;
+    }
+
     @Override
     public void run() {
         while (playing) {
@@ -276,7 +281,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
                 // Does he want to take a shot?
                 if(invaders[i].takeAim(playerShip.getX(),
-                        playerShip.getLength())){
+                        playerShip.getLength(), gameLevel)){
 
                     // If so try and spawn a bullet
                     if(invadersBullets[nextBullet].shoot(invaders[i].getX()
@@ -457,7 +462,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
             paint.setTextSize(60);
-            canvas.drawText("Points:" + score + "   Lives:" + lives + " Time:" + (startTime > 0 ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : 0) + "     Best Time:" + Math.round(highScore/100)/10.0, 10,50, paint);
+            canvas.drawText("Lives:" + lives + " Time:" + (startTime > 0 ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : 0) + "  Best Time:" + Math.round(highScore/100)/10.0 + (gameLevel > 0 ? "Level:" + gameLevel : ""), 10,50, paint);
             // Draw everything to the screen
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -490,6 +495,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // So we can override this method and detect screen touches.
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
+        if(gameLevel == 0){
+            return true;
+        }
         float yPoint;
         int maskedAction = motionEvent.getActionMasked();
         switch (maskedAction) {

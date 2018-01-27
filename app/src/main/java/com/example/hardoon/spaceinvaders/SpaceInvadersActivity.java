@@ -1,12 +1,25 @@
 package com.example.hardoon.spaceinvaders;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.app.Activity;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.Display;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 // SpaceInvadersActivity is the entry point to the game.
 // It will handle the lifecycle of the game by calling
@@ -20,15 +33,50 @@ public class SpaceInvadersActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Get a Display object to access screen details
-        Display display = getWindowManager().getDefaultDisplay();
         // Load the resolution into a Point object
         Point size = new Point();
+        // Get a Display object to access screen details
+        Display display = getWindowManager().getDefaultDisplay();
         display.getSize(size);
+        final SharedPreferences sharedPref = getPreferences(MODE_PRIVATE);
+        final FrameLayout game = new FrameLayout(this);
+        final LinearLayout gameButtons = new LinearLayout(this);
+        EditText levelEdit = new EditText(this);
+        final int oldLevel = sharedPref.getInt("GameLevel", 1);
+        levelEdit.setHint("select level (1 - 9) , current = " + oldLevel);
+        levelEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
+        gameButtons.addView(levelEdit);
         // Initialize gameView and set it as the view
-        SharedPreferences s = getPreferences(MODE_PRIVATE);
-        spaceInvadersView = new SpaceInvadersView(this, size.x, size.y,s);
-        setContentView(spaceInvadersView);
+        levelEdit.addTextChangedListener(new TextWatcher() {
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start,
+                                          int count, int after) {
+            }
+            // the user's changes are saved here
+            public void onTextChanged(CharSequence c, int start, int before, int count) {
+            }
+
+            public void afterTextChanged(Editable c) {
+                String s = c.toString();
+                int level = Integer.parseInt(s);
+                level = Math.min(9,Math.max(1, level));
+                if(level != oldLevel){
+                    SharedPreferences.Editor e = sharedPref.edit();
+                    e.putLong("FastestTime",0);
+                    e.putInt("GameLevel",level);
+                    e.commit();
+                }
+                //gameButtons.setVisibility(View.INVISIBLE);
+                gameButtons.setVisibility(View.INVISIBLE);
+                spaceInvadersView.startGame(level);
+
+            }
+        });
+        spaceInvadersView = new SpaceInvadersView(this, size.x, size.y,sharedPref);
+        game.addView(spaceInvadersView);
+        game.addView(gameButtons);
+        setContentView(game);
     }
     // This method executes when the player starts the game
     @Override
