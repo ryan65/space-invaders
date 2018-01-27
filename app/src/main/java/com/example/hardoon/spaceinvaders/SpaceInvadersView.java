@@ -47,6 +47,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // This variable tracks the game frame rate
     private long fps;
 
+    private Boolean lastResultWon = null;
     // This is used to help calculate the fps
     private long timeThisFrame;
 
@@ -81,6 +82,8 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private int damageShelterID = -1;
     private int uhID = -1;
     private int ohID = -1;
+    private int victorySoundID = -1;
+    private int loosingSoundID = -1;
     private int gameLevel = 0;
 
     // The score
@@ -98,10 +101,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private long highScore = 0;
     private SharedPreferences sharedPreferences;
     private long startTime = 0;
+    private long gameTime = 0;
 
     // When the we initialize (call new()) on gameView
 // This special constructor method runs
     public SpaceInvadersView(Context context, int x, int y, SharedPreferences sP) {
+
 
         // The next line of code asks the
         // SurfaceView class to set up our object.
@@ -148,29 +153,28 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             descriptor = assetManager.openFd("oh.ogg");
             ohID = soundPool.load(descriptor, 0);
 
+            descriptor = assetManager.openFd("victorySound.mp3");
+            victorySoundID = soundPool.load(descriptor, 0);
+
+            descriptor = assetManager.openFd("loosingSound.mp3");
+            loosingSoundID = soundPool.load(descriptor, 0);
+
         }catch(IOException e){
             // Print an error message to the console
             Log.e("error", "failed to load sound files");
         }
 
-        prepareLevel(false);
+        prepareLevel();
     }
 
-    private void prepareLevel(Boolean won){
+    private Boolean haveWeStartedToPlay (){
+        return gameLevel > 0;
+    }
 
-        if(won){
-            long gameTime = System.currentTimeMillis() - startTime;
-            if(gameTime < highScore || highScore == 0){
-                highScore = gameTime;
-                SharedPreferences.Editor e = sharedPreferences.edit();
-                e.putLong("FastestTime"+gameLevel,highScore);
-                e.commit();
-            }
-        }
-        paused = true;
+    private void prepareLevel(){
+
         score = 0;
         lives = 3;
-        startTime = 0;
         // Here we will initialize all the game objects
         // Reset the menace level
         menaceInterval = 1000;
@@ -260,7 +264,25 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         if(paused){
             startTime = System.currentTimeMillis();
             paused = false;
+            soundPool.stop(victorySoundID);
+            soundPool.stop(loosingSoundID);
+            prepareLevel();
         }
+    }
+    private void gameEnded(Boolean won){
+        gameTime = System.currentTimeMillis() - startTime;
+        if(won){
+            if(gameTime < highScore || highScore == 0){
+                highScore = gameTime;
+                SharedPreferences.Editor e = sharedPreferences.edit();
+                e.putLong("FastestTime"+gameLevel,highScore);
+                e.commit();
+            }
+        }
+        lastResultWon = won;
+
+        soundPool.play(won ? victorySoundID : loosingSoundID, 1, 1, 0, 0, 1);
+        paused = true;
     }
     private void update(){
 
@@ -334,7 +356,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             menaceInterval = menaceInterval - 80;
         }
         if(lost){
-            prepareLevel(false);
+            gameEnded(false);
         }
 
         for(int i = 0; i < shipBullets.length; i++){
@@ -358,7 +380,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
                             // Has the player won
                              if(score == numInvaders * 10){
-                                prepareLevel(true);
+                                gameEnded(true);
                             }
                         }
                     }
@@ -406,7 +428,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                     soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
                     // Is it game over?
                     if(lives == 0){
-                        prepareLevel(false);
+                        gameEnded(false);
                     }
                 }
             }
@@ -462,7 +484,14 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
             paint.setTextSize(60);
-            canvas.drawText("Lives:" + lives + " Time:" + (startTime > 0 ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : 0) + "  Best Time:" + Math.round(highScore/100)/10.0 + (gameLevel > 0 ? " Level:" + gameLevel : ""), 10,50, paint);
+            canvas.drawText("Lives:" + lives + " Time:" + (!paused ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : Math.round(gameTime/100)/10.0) + "  Best Time:" + Math.round(highScore/100)/10.0 + (haveWeStartedToPlay() ? " Level:" + gameLevel : ""), 10,50, paint);
+
+            if(paused && lastResultWon != null){
+                paint.setTextSize(100);
+                paint.setColor((lastResultWon ? Color.GREEN : Color.BLACK));
+                canvas.drawText("GAME OVER " + (lastResultWon ? "CHAMP" : "LOOSER"), 10,screenY/2, paint);
+            }
+
             // Draw everything to the screen
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -495,7 +524,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // So we can override this method and detect screen touches.
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
-        if(gameLevel == 0){
+        if(!haveWeStartedToPlay()){
             return true;
         }
         float yPoint;
