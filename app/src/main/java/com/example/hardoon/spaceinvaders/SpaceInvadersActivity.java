@@ -1,5 +1,6 @@
 package com.example.hardoon.spaceinvaders;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -68,6 +70,9 @@ public class SpaceInvadersActivity extends Activity {
                     e.commit();
                 }
                 //gameButtons.setVisibility(View.INVISIBLE);
+                // Then just use the following:
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(gameButtons.getWindowToken(), 0);
                 gameButtons.setVisibility(View.INVISIBLE);
                 spaceInvadersView.startGame(level);
 
