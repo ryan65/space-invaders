@@ -462,7 +462,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
             paint.setTextSize(60);
-            canvas.drawText("Lives:" + lives + " Time:" + (startTime > 0 ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : 0) + "  Best Time:" + Math.round(highScore/100)/10.0 + (gameLevel > 0 ? "Level:" + gameLevel : ""), 10,50, paint);
+            canvas.drawText("Lives:" + lives + " Time:" + (startTime > 0 ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : 0) + "  Best Time:" + Math.round(highScore/100)/10.0 + (gameLevel > 0 ? " Level:" + gameLevel : ""), 10,50, paint);
             // Draw everything to the screen
             ourHolder.unlockCanvasAndPost(canvas);
         }
@@ -507,7 +507,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                 checkIfFirstDownForNewGame();
                 yPoint = motionEvent.getY(motionEvent.getActionIndex());
                 if(maskedAction == MotionEvent.ACTION_DOWN && isShipMoveLocation(yPoint)) {
-                    Log.d("SpaceInvadersView","Action Move ship");
                     if (motionEvent.getX() > screenX / 2) {
                         playerShip.setMovementState(playerShip.RIGHT);
                     } else {
@@ -517,7 +516,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                 }
                 else if(!isShipMoveLocation(yPoint)){ //pressed above ship , lets shoot bullets
                     // Shots fired
-                    Log.d("SpaceInvadersView","Action Fire Bullet");
                     for(int i = 0; i <shipBullets.length ; i++){
                         Bullet currBullet = shipBullets[i];
                         //look for one bullet that can be shot and then break if shot.
