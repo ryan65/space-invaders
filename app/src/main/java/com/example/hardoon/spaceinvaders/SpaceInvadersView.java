@@ -22,9 +22,11 @@ import java.io.IOException;
  * Created by hardoon on 1/23/2018.
  */
 
+
 public class SpaceInvadersView  extends SurfaceView implements Runnable{
     Context context;
 
+    private  static final float DEFAULT_VOLUME = (float)0.3;
     //max number of bullets that can be shot together
     private static final int NUM_OF_SHIP_BULLETS = 2;
     // This is our thread
@@ -153,17 +155,16 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             descriptor = assetManager.openFd("oh.ogg");
             ohID = soundPool.load(descriptor, 0);
 
-            descriptor = assetManager.openFd("victorySound.mp3");
+            descriptor = assetManager.openFd("victorySound.ogg");
             victorySoundID = soundPool.load(descriptor, 0);
 
-            descriptor = assetManager.openFd("loosingSound.mp3");
+            descriptor = assetManager.openFd("loosingSound.ogg");
             loosingSoundID = soundPool.load(descriptor, 0);
 
         }catch(IOException e){
             // Print an error message to the console
             Log.e("error", "failed to load sound files");
         }
-
         prepareLevel();
     }
 
@@ -171,6 +172,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         return gameLevel > 0;
     }
 
+    private void playSound(int id) {
+        soundPool.play(id, DEFAULT_VOLUME, DEFAULT_VOLUME, 0, 0, 1);
+    }
+    private void playSoundLoud(int id) {
+        soundPool.play(id, 0.99f,0.99f, 5, 0, 1);
+    }
     private void prepareLevel(){
 
         score = 0;
@@ -195,7 +202,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         numInvaders = 0;
         for(int column = 0; column < 6; column ++ ){
             for(int row = 0; row < 5; row ++ ){
-                invaders[numInvaders] = new Invader(context, row, column, screenX, screenY);
+                invaders[numInvaders] = new Invader(context, row, column, screenX, screenY,gameLevel);
                 numInvaders ++;
             }
         }
@@ -242,15 +249,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Play a sound based on the menace level
             if(!paused) {
                 if ((startFrameTime - lastMenaceTime) > menaceInterval) {
-                    if (uhOrOh) {
-                        // Play Uh
-                        soundPool.play(uhID, 1, 1, 0, 0, 1);
-
-                    } else {
-                        // Play Oh
-                        soundPool.play(ohID, 1, 1, 0, 0, 1);
-                    }
-
+                    playSound(uhOrOh ? uhID: ohID);
                     // Reset the last menace time
                     lastMenaceTime = System.currentTimeMillis();
                     // Alter value of uhOrOh
@@ -280,8 +279,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             }
         }
         lastResultWon = won;
-
-        soundPool.play(won ? victorySoundID : loosingSoundID, 1, 1, 0, 0, 1);
+        playSoundLoud(won ? victorySoundID : loosingSoundID);
         paused = true;
     }
     private void update(){
@@ -303,7 +301,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
                 // Does he want to take a shot?
                 if(invaders[i].takeAim(playerShip.getX(),
-                        playerShip.getLength(), gameLevel)){
+                        playerShip.getLength())){
 
                     // If so try and spawn a bullet
                     if(invadersBullets[nextBullet].shoot(invaders[i].getX()
@@ -374,7 +372,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                     if (invaders[j].getVisibility()) {
                         if (RectF.intersects(currBullet.getRect(), invaders[j].getRect())) {
                             invaders[j].setInvisible();
-                            soundPool.play(invaderExplodeID, 1, 1, 0, 0, 1);
+                            playSound(invaderExplodeID);
                             currBullet.setInactive();
                             score = score + 10;
 
@@ -394,7 +392,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                             // A collision has occurred
                             currBullet.setInactive();
                             bricks[j].setInvisible();
-                            soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
+                            playSound(damageShelterID);
                         }
                     }
                 }
@@ -415,7 +413,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                             // A collision has occurred
                             currBullet.setInactive();
                             bricks[j].setInvisible();
-                            soundPool.play(damageShelterID, 1, 1, 0, 0, 1);
+                            playSound(damageShelterID);
                             break;
                         }
                     }
@@ -425,7 +423,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                 if(RectF.intersects(playerShip.getRect(), currBullet.getRect())){
                     currBullet.setInactive();
                     lives --;
-                    soundPool.play(playerExplodeID, 1, 1, 0, 0, 1);
+                    playSound(playerExplodeID);
                     // Is it game over?
                     if(lives == 0){
                         gameEnded(false);
@@ -550,7 +548,8 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                         //look for one bullet that can be shot and then break if shot.
                         if(currBullet.shoot(playerShip.getX()+
                                 playerShip.getLength()/2,screenY - playerShip.getHeight(),currBullet.UP)){
-                            soundPool.play(shootID, 1, 1, 0, 0, 1);
+
+                            playSound(shootID);
                             break;
                         }
 

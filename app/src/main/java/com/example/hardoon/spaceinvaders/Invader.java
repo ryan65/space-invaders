@@ -30,24 +30,26 @@ public class Invader {
     // Y is the top coordinate
     private float y;
 
+    private int gameLevel;
     // This will hold the pixels per second speedthat the invader will move
     private float shipSpeed;
 
     public final int LEFT = 1;
     public final int RIGHT = 2;
 
+
     // Is the ship moving and in which direction
     private int shipMoving = RIGHT;
 
     boolean isVisible;
-    public Invader(Context context, int row, int column, int screenX, int screenY) {
+    public Invader(Context context, int row, int column, int screenX, int screenY, int gameLevel) {
 
         // Initialize a blank RectF
         rect = new RectF();
 
         length = screenX / 20;
         height = screenY / 20;
-
+        this.gameLevel = gameLevel;
         isVisible = true;
 
         int padding = screenX / 25;
@@ -72,7 +74,7 @@ public class Invader {
                 false);
 
         // How fast is the invader in pixels per second
-        shipSpeed = 40;
+        shipSpeed = 35 + 5 * gameLevel;
     }
     public void setInvisible(){
         isVisible = false;
@@ -132,7 +134,7 @@ public class Invader {
 
         shipSpeed = shipSpeed * 1.18f;
     }
-    public boolean takeAim(float playerShipX, float playerShipLength, int level){
+    public boolean takeAim(float playerShipX, float playerShipLength){
 
         int randomNumber = -1;
 
@@ -140,7 +142,7 @@ public class Invader {
         if((playerShipX + playerShipLength > x &&
                 playerShipX + playerShipLength < x + length) || (playerShipX > x && playerShipX < x + length)) {
 
-            int shootChance = (int)Math.round(30 * (10 - level));
+            int shootChance = (int)Math.round(10 + 30 * (9 - gameLevel));
             randomNumber = generator.nextInt(shootChance);
             if(randomNumber == 0) {
                 return true;
@@ -149,7 +151,7 @@ public class Invader {
         }
 
         // If firing randomly (not near the player) a 1 in 5000 chance
-        int notNearPlayer = (int)Math.round(900 * (10 - level));
+        int notNearPlayer = (int)Math.round(200 + 900 * (9 - gameLevel));
         randomNumber = generator.nextInt(notNearPlayer);
         if(randomNumber == 0){
             return true;
