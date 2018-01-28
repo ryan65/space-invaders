@@ -11,29 +11,26 @@ public class DefenceBrick {
 
     private boolean isVisible;
 
-    public DefenceBrick(int row, int column, int shelterNumber, int screenX, int screenY){
+    public DefenceBrick(int row, int column, int shelterNumber, int screenX, int screenY, float shelterTop, float height){
 
         int width = screenX / 90;
-        int height = screenY / 40;
 
         isVisible = true;
 
         // Sometimes a bullet slips through this padding.
         // Set padding to zero if this annoys you
         int brickPadding = 1;
-
         // The number of shelters
         int shelterPadding = screenX / 9;
-        int startHeight = screenY - (screenY /8 * 2);
 
         rect = new RectF(column * width + brickPadding +
                 (shelterPadding * shelterNumber) +
                 shelterPadding + shelterPadding * shelterNumber,
-                row * height + brickPadding + startHeight,
+                row * height + brickPadding + shelterTop,
                 column * width + width - brickPadding +
                         (shelterPadding * shelterNumber) +
                         shelterPadding + shelterPadding * shelterNumber,
-                row * height + height - brickPadding + startHeight);
+                row * height + height - brickPadding + shelterTop);
     }
     public RectF getRect(){
         return this.rect;

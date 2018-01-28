@@ -32,14 +32,14 @@ public class Invader {
 
     private int gameLevel;
     // This will hold the pixels per second speedthat the invader will move
-    private float shipSpeed;
+    private float invaderSpeed;
 
     public final int LEFT = 1;
     public final int RIGHT = 2;
 
 
     // Is the ship moving and in which direction
-    private int shipMoving = RIGHT;
+    private int invaderMoving = RIGHT;
 
     boolean isVisible;
     public Invader(Context context, int row, int column, int screenX, int screenY, int gameLevel) {
@@ -73,8 +73,8 @@ public class Invader {
                 (int) (height),
                 false);
 
-        // How fast is the invader in pixels per second
-        shipSpeed = 35 + 5 * gameLevel;
+        // How fast is the invader in pixels per second . after level 5 we we increase the speed
+        invaderSpeed = 40 + Math.max(0, 8 * (5 - gameLevel));
     }
     public void setInvisible(){
         isVisible = false;
@@ -104,16 +104,20 @@ public class Invader {
         return y;
     }
 
+    public float getBottom(){
+        return y + height;
+    }
+
     public float getLength(){
         return length;
     }
     public void update(long fps){
-        if(shipMoving == LEFT){
-            x = x - shipSpeed / fps;
+        if(invaderMoving == LEFT){
+            x = x - invaderSpeed / fps;
         }
 
-        if(shipMoving == RIGHT){
-            x = x + shipSpeed / fps;
+        if(invaderMoving == RIGHT){
+            x = x + invaderSpeed / fps;
         }
 
         // Update rect which is used to detect hits
@@ -124,15 +128,15 @@ public class Invader {
 
     }
     public void dropDownAndReverse(){
-        if(shipMoving == LEFT){
-            shipMoving = RIGHT;
+        if(invaderMoving == LEFT){
+            invaderMoving = RIGHT;
         }else{
-            shipMoving = LEFT;
+            invaderMoving = LEFT;
         }
 
         y = y + height;
 
-        shipSpeed = shipSpeed * 1.18f;
+        invaderSpeed = invaderSpeed * 1.18f;
     }
     public boolean takeAim(float playerShipX, float playerShipLength){
 

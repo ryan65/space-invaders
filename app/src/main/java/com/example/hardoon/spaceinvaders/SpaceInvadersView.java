@@ -71,6 +71,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // Up to 60 invaders
     Invader[] invaders = new Invader[60];
     int numInvaders = 0;
+    float invaderTouchDownPos;
 
     // The player's shelters are built from bricks
     private DefenceBrick[] bricks = new DefenceBrick[400];
@@ -208,10 +209,15 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
 // Build the shelters
         numBricks = 0;
+        int brickHeight = screenY / 40;
+        int shelterRowNum = 5;
+        float shelterTop = getPlayerShipAreaTop() - brickHeight* shelterRowNum - 30;
+        invaderTouchDownPos = shelterTop + 1;
+
         for(int shelterNumber = 0; shelterNumber < 4; shelterNumber++){
             for(int column = 0; column < 10; column ++ ) {
-                for (int row = 0; row < 5; row++) {
-                    bricks[numBricks] = new DefenceBrick(row, column, shelterNumber, screenX, screenY);
+                for (int row = 0; row < shelterRowNum; row++) {
+                    bricks[numBricks] = new DefenceBrick(row, column, shelterNumber, screenX, screenY, shelterTop, brickHeight);
                     numBricks++;
                 }
             }
@@ -344,7 +350,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             for(int i = 0; i < numInvaders; i++){
                 invaders[i].dropDownAndReverse();
                 // Have the invaders landed
-                if(invaders[i].getY() > screenY - screenY / 10){
+                if(invaders[i].getBottom() > invaderTouchDownPos){
                     lost = true;
                 }
             }
@@ -442,6 +448,15 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Draw the background color
             canvas.drawColor(Color.argb(255, 26, 128, 182));
 
+            // Draw ship area for moving ship
+            paint.setColor(Color.argb(255, 26, 128, 120));
+            canvas.drawRect(0, getPlayerShipAreaTop(), screenX, screenY, paint);
+
+            //border ship move left right
+            paint.setColor(Color.argb(255, 50, 150, 50));
+            paint.setStrokeWidth(8);
+            canvas.drawLine( screenX/2,getPlayerShipAreaTop(), screenX/2, screenY, paint);
+
             // Choose the brush color for drawing
             paint.setColor(Color.argb(255,  255, 255, 255));
 
@@ -487,7 +502,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             if(paused && lastResultWon != null){
                 paint.setTextSize(100);
                 paint.setColor((lastResultWon ? Color.GREEN : Color.BLACK));
-                canvas.drawText("GAME OVER " + (lastResultWon ? "CHAMP" : "LOOSER"), 10,screenY/2, paint);
+                canvas.drawText("GAME OVER " + (lastResultWon ? "CHAMP" : "LOOSER!!!"), 10,screenY/2, paint);
             }
 
             // Draw everything to the screen
@@ -516,8 +531,13 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     }
 
     public boolean isShipMoveLocation(float y){
-        return y > screenY - playerShip.getHeight();
+        return y > getPlayerShipAreaTop();
     }
+    public float getPlayerShipAreaTop(){
+        return screenY - playerShip.getHeight();
+    }
+
+
     // The SurfaceView class implements onTouchListener
     // So we can override this method and detect screen touches.
     @Override
@@ -547,7 +567,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                         Bullet currBullet = shipBullets[i];
                         //look for one bullet that can be shot and then break if shot.
                         if(currBullet.shoot(playerShip.getX()+
-                                playerShip.getLength()/2,screenY - playerShip.getHeight(),currBullet.UP)){
+                                playerShip.getLength()/2,getPlayerShipAreaTop(),currBullet.UP)){
 
                             playSound(shootID);
                             break;
