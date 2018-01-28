@@ -74,7 +74,7 @@ public class Invader {
                 false);
 
         // How fast is the invader in pixels per second . after level 5 we we increase the speed
-        invaderSpeed = 40 + Math.max(0, 8 * (5 - gameLevel));
+        invaderSpeed = 40 + Math.max(0, 8 * (gameLevel - 5));
     }
     public void setInvisible(){
         isVisible = false;
