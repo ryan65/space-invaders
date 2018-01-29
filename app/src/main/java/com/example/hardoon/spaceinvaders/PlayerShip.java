@@ -93,6 +93,11 @@ public class PlayerShip {
     public void setMovementState(int state){
         shipMoving = state;
     }
+
+    public int getMovementState(){
+        return shipMoving ;
+    }
+
     // This update method will be called from update in SpaceInvadersView
     // It determines if the player ship needs to move and changes the coordinates
     // contained in x if necessary

@@ -138,26 +138,26 @@ public class Invader {
 
         invaderSpeed = invaderSpeed * 1.18f;
     }
-    public boolean takeAim(float playerShipX, float playerShipLength){
-
+    private boolean winTheLottery(int min, int incr, float ratioVisibleInvaders){
         int randomNumber = -1;
+        int seed = (int)(Math.round(min + incr * (9 - gameLevel)) * (0.4 + 0.6 * ratioVisibleInvaders)) ;
+        randomNumber = generator.nextInt(seed);
+        return randomNumber == 0;
+    }
+
+    public boolean takeAim(float playerShipX, float playerShipLength, float ratioVisibleInvaders){
 
         // If near the player
         if((playerShipX + playerShipLength > x &&
                 playerShipX + playerShipLength < x + length) || (playerShipX > x && playerShipX < x + length)) {
 
-            int shootChance = (int)Math.round(10 + 30 * (9 - gameLevel));
-            randomNumber = generator.nextInt(shootChance);
-            if(randomNumber == 0) {
+            if(winTheLottery(10, 30, ratioVisibleInvaders)){
                 return true;
             }
-
         }
 
-        // If firing randomly (not near the player) a 1 in 5000 chance
-        int notNearPlayer = (int)Math.round(200 + 900 * (9 - gameLevel));
-        randomNumber = generator.nextInt(notNearPlayer);
-        if(randomNumber == 0){
+        // not near player
+        if(winTheLottery(200, 400, ratioVisibleInvaders)){
             return true;
         }
 

@@ -32,6 +32,13 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // This is our thread
     private Thread gameThread = null;
 
+    private static final int NUM_OF_INVADERS_ROWS = 5;
+    private static final int NUM_OF_INVADERS_COLUMNS = 6;
+    private static final int NUM_OF_INVADERS = NUM_OF_INVADERS_ROWS * NUM_OF_INVADERS_COLUMNS;
+    private static final int NUM_OF_LIVES = 3;
+    // The max number of bullets currently shot
+    private final int MAX_INVADER_BULLETS = 10;
+
     // Our SurfaceHolder to lock the surface before we draw our graphics
     private SurfaceHolder ourHolder;
 
@@ -63,14 +70,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // The player's bullet
     private Bullet[] shipBullets = new Bullet[NUM_OF_SHIP_BULLETS];
 
-    // The invaders bullets
-    private Bullet[] invadersBullets = new Bullet[200];
+    private Bullet[] invadersBullets = new Bullet[MAX_INVADER_BULLETS];
     private int nextBullet;
-    private int maxInvaderBullets = 10;
 
     // Up to 60 invaders
-    Invader[] invaders = new Invader[60];
-    int numInvaders = 0;
+    Invader[] invaders = new Invader[NUM_OF_INVADERS];
+    int numVisibleInvaders;
     float invaderTouchDownPos;
 
     // The player's shelters are built from bricks
@@ -93,7 +98,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     int score = 0;
 
     // Lives
-    private int lives = 3;
+    private int lives;
 
     // How menacing should the sound be?
     private long menaceInterval = 1000;
@@ -166,7 +171,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Print an error message to the console
             Log.e("error", "failed to load sound files");
         }
-        prepareLevel();
+        prepareNewGame();
     }
 
     private Boolean haveWeStartedToPlay (){
@@ -179,10 +184,11 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private void playSoundLoud(int id) {
         soundPool.play(id, 0.99f,0.99f, 5, 0, 1);
     }
-    private void prepareLevel(){
+    private void prepareNewGame(){
 
         score = 0;
-        lives = 3;
+        lives = NUM_OF_LIVES;
+        numVisibleInvaders = NUM_OF_INVADERS;
         // Here we will initialize all the game objects
         // Reset the menace level
         menaceInterval = 1000;
@@ -200,24 +206,29 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
 
         // Build an army of invaders
-        numInvaders = 0;
-        for(int column = 0; column < 6; column ++ ){
-            for(int row = 0; row < 5; row ++ ){
+        int numInvaders = 0;
+        for(int column = 0; column < NUM_OF_INVADERS_COLUMNS; column ++ ){
+            for(int row = 0; row < NUM_OF_INVADERS_ROWS; row ++ ){
                 invaders[numInvaders] = new Invader(context, row, column, screenX, screenY,gameLevel);
                 numInvaders ++;
             }
         }
-// Build the shelters
+        // Build the shelters
         numBricks = 0;
         int brickHeight = screenY / 40;
-        int shelterRowNum = 5;
+        int shelterRowNum = gameLevel > 8 ? 4 : 5;
+        int shelterColumnNumber = 10;
+        int numOfShelters = 4;
         float shelterTop = getPlayerShipAreaTop() - brickHeight* shelterRowNum - 30;
         invaderTouchDownPos = shelterTop + 1;
 
-        for(int shelterNumber = 0; shelterNumber < 4; shelterNumber++){
-            for(int column = 0; column < 10; column ++ ) {
+        for(int shelterNumber = 0; shelterNumber < numOfShelters; shelterNumber++){
+            for(int column = 0; column < shelterColumnNumber; column ++ ) {
                 for (int row = 0; row < shelterRowNum; row++) {
                     bricks[numBricks] = new DefenceBrick(row, column, shelterNumber, screenX, screenY, shelterTop, brickHeight);
+                    if(column % 4 >= 2 && row == 0){
+                        bricks[numBricks].setInvisible();
+                    }
                     numBricks++;
                 }
             }
@@ -271,7 +282,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             paused = false;
             soundPool.stop(victorySoundID);
             soundPool.stop(loosingSoundID);
-            prepareLevel();
+            prepareNewGame();
         }
     }
     private void gameEnded(Boolean won){
@@ -299,15 +310,17 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         playerShip.update(fps);
 
         // Update all the invaders if visible
-        for(int i = 0; i < numInvaders; i++){
+        for(int i = 0; i < NUM_OF_INVADERS; i++){
 
             if(invaders[i].getVisibility()) {
                 // Move the next invader
                 invaders[i].update(fps);
 
+                //we want to increase the shooting when we have less invaders
+                float ratioVisibleInvaders = (float)numVisibleInvaders / NUM_OF_INVADERS;
                 // Does he want to take a shot?
                 if(invaders[i].takeAim(playerShip.getX(),
-                        playerShip.getLength())){
+                        playerShip.getLength(), ratioVisibleInvaders)){
 
                     // If so try and spawn a bullet
                     if(invadersBullets[nextBullet].shoot(invaders[i].getX()
@@ -316,14 +329,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
                         // Shot fired
                         // Prepare for the next shot
-                        nextBullet++;
-
-                        // Loop back to the first one if we have reached the last
-                        if (nextBullet == maxInvaderBullets) {
-                            // This stops the firing of another bullet until one completes its journey
-                            // Because if bullet 0 is still active shoot returns false.
-                            nextBullet = 0;
-                        }
+                        nextBullet = (nextBullet + 1) % MAX_INVADER_BULLETS;
                     }
                 }
 
@@ -347,10 +353,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         if(bumped){
 
             // Move all the invaders down and change direction
-            for(int i = 0; i < numInvaders; i++){
+            for(int i = 0; i < NUM_OF_INVADERS; i++){
                 invaders[i].dropDownAndReverse();
                 // Have the invaders landed
-                if(invaders[i].getBottom() > invaderTouchDownPos){
+                if(invaders[i].getVisibility() &&  invaders[i].getBottom() > invaderTouchDownPos){
                     lost = true;
                 }
             }
@@ -374,17 +380,18 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             }
             // Has the player's bullet hit an invader
             if(currBullet.getStatus()) {
-                for (int j = 0; j < numInvaders; j++) {
+                for (int j = 0; j < NUM_OF_INVADERS; j++) {
                     if (invaders[j].getVisibility()) {
                         if (RectF.intersects(currBullet.getRect(), invaders[j].getRect())) {
                             invaders[j].setInvisible();
+                            numVisibleInvaders--;
                             playSound(invaderExplodeID);
                             currBullet.setInactive();
                             score = score + 10;
-
                             // Has the player won
-                             if(score == numInvaders * 10){
+                             if(numVisibleInvaders == 0){
                                 gameEnded(true);
+                                break;
                             }
                         }
                     }
@@ -448,12 +455,17 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Draw the background color
             canvas.drawColor(Color.argb(255, 26, 128, 182));
 
+            int colorShipArea = Color.argb(255, 26, 128, 120);
+            int colorShipAreaPressed = Color.argb(255, 26, 180, 120);
             // Draw ship area for moving ship
-            paint.setColor(Color.argb(255, 26, 128, 120));
-            canvas.drawRect(0, getPlayerShipAreaTop(), screenX, screenY, paint);
+            paint.setColor(playerShip.getMovementState() == playerShip.LEFT ?colorShipAreaPressed : colorShipArea );
+            canvas.drawRect(0, getPlayerShipAreaTop(), screenX/2, screenY, paint);
+
+            paint.setColor(playerShip.getMovementState() == playerShip.RIGHT ?colorShipAreaPressed : colorShipArea );
+            canvas.drawRect(screenX/2, getPlayerShipAreaTop(), screenX, screenY, paint);
 
             //border ship move left right
-            paint.setColor(Color.argb(255, 50, 150, 50));
+            paint.setColor(colorShipAreaPressed);
             paint.setStrokeWidth(8);
             canvas.drawLine( screenX/2,getPlayerShipAreaTop(), screenX/2, screenY, paint);
 
@@ -464,7 +476,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Now draw the player spaceship
             canvas.drawBitmap(playerShip.getBitmap(), playerShip.getX(), playerShip.getY(), paint);
             // Draw the invaders
-            for(int i = 0; i < numInvaders; i++){
+            for(int i = 0; i < NUM_OF_INVADERS; i++){
                 if(invaders[i].getVisibility()) {
                     if(uhOrOh) {
                         canvas.drawBitmap(invaders[i].getBitmap(), invaders[i].getX(), invaders[i].getY(), paint);
@@ -502,7 +514,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             if(paused && lastResultWon != null){
                 paint.setTextSize(100);
                 paint.setColor((lastResultWon ? Color.GREEN : Color.BLACK));
-                canvas.drawText("GAME OVER " + (lastResultWon ? "CHAMP" : "LOOSER!!!"), 10,screenY/2, paint);
+                if(lastResultWon && gameLevel == 9){
+                    canvas.drawText("YOU'RE THE MASTER!!", 10,screenY/2, paint);
+                }
+                else{
+                    canvas.drawText("GAME OVER " + (lastResultWon ? "CHAMP" : "LOOSER!!!"), 10,screenY/2, paint);
+                }
             }
 
             // Draw everything to the screen

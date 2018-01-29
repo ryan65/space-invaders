@@ -19,7 +19,7 @@ public class DefenceBrick {
 
         // Sometimes a bullet slips through this padding.
         // Set padding to zero if this annoys you
-        int brickPadding = 1;
+        int brickPadding = 0; //1;
         // The number of shelters
         int shelterPadding = screenX / 9;
 
@@ -37,7 +37,7 @@ public class DefenceBrick {
     }
 
     public void setInvisible(){
-        isVisible = false;
+       isVisible = false;
     }
 
     public boolean getVisibility(){
