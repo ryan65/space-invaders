@@ -161,10 +161,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             descriptor = assetManager.openFd("oh.ogg");
             ohID = soundPool.load(descriptor, 0);
 
-            descriptor = assetManager.openFd("victorySound.ogg");
+            descriptor = assetManager.openFd("victorySound.mp3");
             victorySoundID = soundPool.load(descriptor, 0);
 
-            descriptor = assetManager.openFd("loosingSound.ogg");
+            descriptor = assetManager.openFd("loosingSound.mp3");
             loosingSoundID = soundPool.load(descriptor, 0);
 
         }catch(IOException e){
