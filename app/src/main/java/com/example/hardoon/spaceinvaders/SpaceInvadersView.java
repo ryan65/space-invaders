@@ -17,6 +17,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by hardoon on 1/23/2018.
@@ -24,7 +26,16 @@ import java.io.IOException;
 
 
 public class SpaceInvadersView  extends SurfaceView implements Runnable{
+
+    class SaucerTimerTask extends TimerTask {
+        @Override
+        public void run(){
+            SpaceInvadersView.this.startFlyingSaucer();
+        }
+    }
+
     Context context;
+
 
     private  static final float DEFAULT_VOLUME = (float)0.3;
     //max number of bullets that can be shot together
@@ -36,6 +47,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private static final int NUM_OF_INVADERS_COLUMNS = 6;
     private static final int NUM_OF_INVADERS = NUM_OF_INVADERS_ROWS * NUM_OF_INVADERS_COLUMNS;
     private static final int NUM_OF_LIVES = 3;
+    private static final int FLYING_SAUCER_TIMEOUT = 10000;
     // The max number of bullets currently shot
     private final int MAX_INVADER_BULLETS = 10;
 
@@ -94,6 +106,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private int loosingSoundID = -1;
     private int gameLevel = 0;
 
+
+    private Timer saucerTimer;
+    private FlyingSaucer flyingSaucer = null;
+
     // The score
     int score = 0;
 
@@ -107,6 +123,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // When did we last play a menacing sound
     private long lastMenaceTime = System.currentTimeMillis();
     private long highScore = 0;
+    private long fastestTime = 0;
     private SharedPreferences sharedPreferences;
     private long startTime = 0;
     private long gameTime = 0;
@@ -171,7 +188,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Print an error message to the console
             Log.e("error", "failed to load sound files");
         }
-        prepareNewGame();
+
+        saucerTimer = new Timer();
+        prepareNewGame(false);
+
     }
 
     private Boolean haveWeStartedToPlay (){
@@ -184,7 +204,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private void playSoundLoud(int id) {
         soundPool.play(id, 0.99f,0.99f, 5, 0, 1);
     }
-    private void prepareNewGame(){
+    private void prepareNewGame(boolean started){
 
         score = 0;
         lives = NUM_OF_LIVES;
@@ -194,6 +214,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         menaceInterval = 1000;
         // Make a new player space ship
         playerShip = new PlayerShip(context, screenX, screenY);
+        if(started){
+            relaunchFlyingSaucer();
+        }
 
         // Initialize the shipBullets array
         for(int i = 0; i < shipBullets.length; i++){
@@ -236,7 +259,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     }
     public void startGame(int level){
         gameLevel = level;
-        this.highScore = sharedPreferences.getLong("FastestTime"+gameLevel, 0);
+        this.fastestTime = sharedPreferences.getLong("FastestTime"+gameLevel, 0);
+        this.highScore = sharedPreferences.getLong("HighScore"+gameLevel, 0);
+
     }
 
     @Override
@@ -282,22 +307,35 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             paused = false;
             soundPool.stop(victorySoundID);
             soundPool.stop(loosingSoundID);
-            prepareNewGame();
+            prepareNewGame(true);
         }
     }
+    private void relaunchFlyingSaucer(){
+        flyingSaucer = null;
+        saucerTimer.schedule(new SaucerTimerTask(), FLYING_SAUCER_TIMEOUT);
+    }
+
     private void gameEnded(Boolean won){
         gameTime = System.currentTimeMillis() - startTime;
         if(won){
-            if(gameTime < highScore || highScore == 0){
-                highScore = gameTime;
+            if(gameTime < fastestTime || fastestTime == 0){
+                fastestTime = gameTime;
                 SharedPreferences.Editor e = sharedPreferences.edit();
-                e.putLong("FastestTime"+gameLevel,highScore);
+                e.putLong("FastestTime"+gameLevel,fastestTime);
                 e.commit();
             }
+        }
+        if(score > highScore){
+            highScore = score;
+            SharedPreferences.Editor e = sharedPreferences.edit();
+            e.putLong("HighScore"+gameLevel,highScore);
+            e.commit();
+
         }
         lastResultWon = won;
         playSoundLoud(won ? victorySoundID : loosingSoundID);
         paused = true;
+        flyingSaucer = null;
     }
     private void update(){
 
@@ -308,6 +346,16 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         boolean lost = false;
         // Move the player's ship
         playerShip.update(fps);
+
+
+        if(flyingSaucer != null){
+            if(flyingSaucer.getX() > screenX){
+                relaunchFlyingSaucer();
+            }
+            else{
+                flyingSaucer.update(fps);
+            }
+        }
 
         // Update all the invaders if visible
         for(int i = 0; i < NUM_OF_INVADERS; i++){
@@ -380,18 +428,25 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             }
             // Has the player's bullet hit an invader
             if(currBullet.getStatus()) {
-                for (int j = 0; j < NUM_OF_INVADERS; j++) {
-                    if (invaders[j].getVisibility()) {
-                        if (RectF.intersects(currBullet.getRect(), invaders[j].getRect())) {
-                            invaders[j].setInvisible();
-                            numVisibleInvaders--;
-                            playSound(invaderExplodeID);
-                            currBullet.setInactive();
-                            score = score + 10;
-                            // Has the player won
-                             if(numVisibleInvaders == 0){
-                                gameEnded(true);
-                                break;
+                if(flyingSaucer != null && flyingSaucer.checkIfHit(currBullet.getRect())){
+                    score += 100;
+                    playSound(invaderExplodeID);
+                    relaunchFlyingSaucer();
+                }
+                else{
+                    for (int j = 0; j < NUM_OF_INVADERS; j++) {
+                        if (invaders[j].getVisibility()) {
+                            if (RectF.intersects(currBullet.getRect(), invaders[j].getRect())) {
+                                invaders[j].setInvisible();
+                                numVisibleInvaders--;
+                                playSound(invaderExplodeID);
+                                currBullet.setInactive();
+                                score = score + 10;
+                                // Has the player won
+                                if(numVisibleInvaders == 0){
+                                    gameEnded(true);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -446,6 +501,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
     }
 
+    private void startFlyingSaucer(){
+        flyingSaucer = new FlyingSaucer(context, 5,5,screenX,screenY,gameLevel);
+    }
+
     private void draw(){
         // Make sure our drawing surface is valid or we crash
         if (ourHolder.getSurface().isValid()) {
@@ -475,6 +534,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Draw the player spaceship
             // Now draw the player spaceship
             canvas.drawBitmap(playerShip.getBitmap(), playerShip.getX(), playerShip.getY(), paint);
+            if(flyingSaucer != null){
+                flyingSaucer.draw(canvas,paint);
+            }
             // Draw the invaders
             for(int i = 0; i < NUM_OF_INVADERS; i++){
                 if(invaders[i].getVisibility()) {
@@ -509,7 +571,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Change the brush color
             paint.setColor(Color.argb(255,  249, 129, 0));
             paint.setTextSize(60);
-            canvas.drawText("Lives:" + lives + " Time:" + (!paused ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : Math.round(gameTime/100)/10.0) + "  Best Time:" + Math.round(highScore/100)/10.0 + (haveWeStartedToPlay() ? " Level:" + gameLevel : ""), 10,50, paint);
+            canvas.drawText("score:" + score + " lives:" + lives + " t:" + (!paused ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : Math.round(gameTime/100)/10.0) + " Best:" + Math.round(fastestTime/100)/10.0 + "/" + highScore + (haveWeStartedToPlay() ? " Level:" + gameLevel : ""), 10,50, paint);
 
             if(paused && lastResultWon != null){
                 paint.setTextSize(100);

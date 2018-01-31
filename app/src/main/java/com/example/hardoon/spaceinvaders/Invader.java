@@ -88,6 +88,7 @@ public class Invader {
         return rect;
     }
 
+
     public Bitmap getBitmap(){
         return bitmap1;
     }
