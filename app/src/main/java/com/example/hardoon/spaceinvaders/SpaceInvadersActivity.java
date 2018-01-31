@@ -45,7 +45,7 @@ public class SpaceInvadersActivity extends Activity {
         final LinearLayout gameButtons = new LinearLayout(this);
         EditText levelEdit = new EditText(this);
         final int oldLevel = sharedPref.getInt("GameLevel", 1);
-        levelEdit.setHint("select level (1 - 9) , current = " + oldLevel);
+        levelEdit.setHint("Select level (1 - 9). Previous level = " + oldLevel);
         levelEdit.setInputType(InputType.TYPE_CLASS_NUMBER);
         gameButtons.addView(levelEdit);
         // Initialize gameView and set it as the view
