@@ -429,6 +429,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             if(currBullet.getStatus()) {
                 if(flyingSaucer != null && flyingSaucer.checkIfHit(currBullet.getRect())){
                     score += 100;
+                    currBullet.setInactive();
                     playSound(invaderExplodeID);
                     relaunchFlyingSaucer();
                 }
