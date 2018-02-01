@@ -7,6 +7,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.media.AudioManager;
+import android.media.SoundPool;
 
 import java.util.Random;
 import java.util.TimerTask;
@@ -26,20 +28,21 @@ public class FlyingSaucer{
 
     private float y;
 
-    boolean isVisible;
+    int movingSoundStreamId;
+    private boolean isVisible;
     float saucerSpeed;
+    SoundPool soundPool;
 
     RectF rect;
     float getX() {
         return x;
     }
 
-    public FlyingSaucer(Context context, float x, float y, int screenX, int screenY, int gameLevel) {
+    public FlyingSaucer(Context context, float x, float y, int screenX, int screenY, int gameLevel, int movingSoundID, SoundPool soundPool) {
 
         length = screenX / 20;
         height = screenY / 20;
         isVisible = true;
-
         this.x = x;
         this.y = y;
         rect = new RectF(x,y,x+length,y + height);
@@ -60,6 +63,11 @@ public class FlyingSaucer{
 
         // How fast is the invader in pixels per second . after level 5 we we increase the speed
         saucerSpeed = 150 + Math.max(0, 10 * (gameLevel - 5));
+        // This SoundPool is deprecated but don't worry
+        this.soundPool = soundPool;
+        movingSoundStreamId = soundPool.play(movingSoundID,0.4f,0.4f,1, -1,1);
+        soundPool.stop(movingSoundID);
+
     }
 
     public void draw(Canvas canvas, Paint paint){
@@ -84,12 +92,21 @@ public class FlyingSaucer{
         rect.offsetTo(newX,rect.top);
     }
 
+    public boolean isVisible(){
+        return isVisible;
+    }
+
+    public void kill(){
+        isVisible = false;
+        soundPool.stop(movingSoundStreamId);
+    }
+
     public boolean checkIfHit(RectF bullet){
         if(!isVisible){
             return false;
         }
         if(RectF.intersects(bullet,rect)){
-            isVisible = false;
+            kill();
             return true;
         }
         return false;

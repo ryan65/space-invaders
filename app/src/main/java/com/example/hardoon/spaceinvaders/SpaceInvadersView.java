@@ -104,6 +104,8 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private int ohID = -1;
     private int victorySoundID = -1;
     private int loosingSoundID = -1;
+    private int flyingSaucerHitSoundID = -1;
+    private int flyingSaucerMoveSoundID = -1;
     private int gameLevel = 0;
 
 
@@ -149,7 +151,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         screenY = y;
 
         // This SoundPool is deprecated but don't worry
-        soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC,0);
+        soundPool = new SoundPool(15, AudioManager.STREAM_MUSIC,0);
 
         try{
             // Create objects of the 2 required classes
@@ -183,6 +185,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
             descriptor = assetManager.openFd("loosingSound.mp3");
             loosingSoundID = soundPool.load(descriptor, 0);
+
+            descriptor = assetManager.openFd("ufo_hit.wav");
+            flyingSaucerHitSoundID = soundPool.load(descriptor, 0);
+
+            descriptor = assetManager.openFd("ufo_moving.wav");
+            flyingSaucerMoveSoundID = soundPool.load(descriptor, 0);
 
         }catch(IOException e){
             // Print an error message to the console
@@ -312,7 +320,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
     }
     private void relaunchFlyingSaucer(){
-        flyingSaucer = null;
+        killFlyingSaucer();
         saucerTimer.schedule(new SaucerTimerTask(), FLYING_SAUCER_TIMEOUT);
     }
 
@@ -336,6 +344,12 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         lastResultWon = won;
         playSoundLoud(won ? victorySoundID : loosingSoundID);
         paused = true;
+        killFlyingSaucer();
+    }
+    private void killFlyingSaucer(){
+        if(flyingSaucer != null){
+            flyingSaucer.kill();
+        }
         flyingSaucer = null;
     }
     private void update(){
@@ -349,7 +363,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         playerShip.update(fps);
 
 
-        if(flyingSaucer != null){
+        if(isFlyingSaucerVisible()){
             if(flyingSaucer.getX() > screenX){
                 relaunchFlyingSaucer();
             }
@@ -427,10 +441,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             }
             // Has the player's bullet hit an invader
             if(currBullet.getStatus()) {
-                if(flyingSaucer != null && flyingSaucer.checkIfHit(currBullet.getRect())){
+                if(isFlyingSaucerVisible() && flyingSaucer.checkIfHit(currBullet.getRect())){
                     score += 100;
                     currBullet.setInactive();
-                    playSound(invaderExplodeID);
+                    playSound(flyingSaucerHitSoundID);
                     relaunchFlyingSaucer();
                 }
                 else{
@@ -505,7 +519,8 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         if(paused){
             return;
         }
-        flyingSaucer = new FlyingSaucer(context,0,5,screenX,screenY,gameLevel);
+        killFlyingSaucer();
+        flyingSaucer = new FlyingSaucer(context,0,5,screenX,screenY,gameLevel,flyingSaucerMoveSoundID, soundPool);
         flyingSaucer.advanceTo(-flyingSaucer.getLength());
     }
 
@@ -574,7 +589,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             paint.setTextSize(60);
             canvas.drawText("score:" + score + " lives:" + lives + " t:" + (!paused ? Math.round((System.currentTimeMillis() - startTime)/100)/10.0 : Math.round(gameTime/100)/10.0) + " Best:" + Math.round(fastestTime/100)/10.0 + "/" + highScore + (haveWeStartedToPlay() ? " Level:" + gameLevel : ""), 10,50, paint);
 
-            if(flyingSaucer != null){
+            if(isFlyingSaucerVisible()){
                 flyingSaucer.draw(canvas,paint);
             }
 
@@ -594,6 +609,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
     }
 
+    public boolean isFlyingSaucerVisible(){
+        return (flyingSaucer != null && flyingSaucer.isVisible());
+    }
     // If SpaceInvadersActivity is paused/stopped
     // shutdown our thread.
     public void pause() {
