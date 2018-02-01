@@ -24,6 +24,8 @@ public class Invader {
     private float length;
     private float height;
 
+    private float screenX;
+
     // X is the far left of the rectangle which forms our invader
     private float x;
 
@@ -46,7 +48,7 @@ public class Invader {
 
         // Initialize a blank RectF
         rect = new RectF();
-
+        this.screenX = screenX;
         length = screenX / 20;
         height = screenY / 20;
         this.gameLevel = gameLevel;
@@ -76,11 +78,11 @@ public class Invader {
         // How fast is the invader in pixels per second . after level 5 we we increase the speed
         invaderSpeed = 40 + Math.max(0, 8 * (gameLevel - 5));
     }
-    public void setInvisible(){
+    public void kill(){
         isVisible = false;
     }
 
-    public boolean getVisibility(){
+    public boolean isAlive(){
         return isVisible;
     }
 
@@ -136,7 +138,6 @@ public class Invader {
         }
 
         y = y + height;
-
         invaderSpeed = invaderSpeed * 1.18f;
     }
     private boolean winTheLottery(int min, int incr, float ratioVisibleInvaders){
@@ -144,6 +145,10 @@ public class Invader {
         int seed = (int)(Math.round(min + incr * (9 - gameLevel)) * (0.4 + 0.6 * ratioVisibleInvaders)) ;
         randomNumber = generator.nextInt(seed);
         return randomNumber == 0;
+    }
+
+    public boolean bumpedIntoScreen(){
+        return ((invaderMoving == LEFT &&  getX() < 0 ) || getX() > screenX - getLength());
     }
 
     public boolean takeAim(float playerShipX, float playerShipLength, float ratioVisibleInvaders){

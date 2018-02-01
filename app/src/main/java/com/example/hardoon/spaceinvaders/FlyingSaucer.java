@@ -34,12 +34,11 @@ public class FlyingSaucer{
         return x;
     }
 
-    public FlyingSaucer(Context context, int x, int y, int screenX, int screenY, int gameLevel) {
+    public FlyingSaucer(Context context, float x, float y, int screenX, int screenY, int gameLevel) {
 
         length = screenX / 20;
         height = screenY / 20;
         isVisible = true;
-        int padding = screenX / 25;
 
         this.x = x;
         this.y = y;
@@ -60,16 +59,8 @@ public class FlyingSaucer{
                 false);
 
         // How fast is the invader in pixels per second . after level 5 we we increase the speed
-        saucerSpeed = 130 + Math.max(0, 8 * (gameLevel - 5));
+        saucerSpeed = 150 + Math.max(0, 10 * (gameLevel - 5));
     }
-    public void setInvisible(){
-        isVisible = false;
-    }
-
-    public boolean getVisibility(){
-        return isVisible;
-    }
-
 
     public void draw(Canvas canvas, Paint paint){
         if(!isVisible){
@@ -82,10 +73,17 @@ public class FlyingSaucer{
         canvas.drawBitmap(b, x, y, paint);
     }
 
-    public void update(float fps){
-        x = x + saucerSpeed/ fps;
-        rect.offsetTo(x,rect.top);
+    public float getLength(){
+        return length;
     }
+    public void update(float fps){
+        advanceTo(x + saucerSpeed/ fps);
+    }
+    public void advanceTo(float newX){
+        x = newX;
+        rect.offsetTo(newX,rect.top);
+    }
+
     public boolean checkIfHit(RectF bullet){
         if(!isVisible){
             return false;
