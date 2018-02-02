@@ -17,6 +17,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,6 +35,20 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
     }
 
+    class StartSpecialInvaderTimerTask extends TimerTask {
+        @Override
+        public void run(){
+            SpaceInvadersView.this.startSpecialInvader(false);
+        }
+    }
+
+    class StopSpecialInvaderTimerTask extends TimerTask {
+        @Override
+        public void run(){
+            SpaceInvadersView.this.stopSpecialInvader();
+        }
+    }
+
     Context context;
 
 
@@ -46,7 +61,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private static final int NUM_OF_INVADERS_ROWS = 5;
     private static final int NUM_OF_INVADERS_COLUMNS = 6;
     private static final int NUM_OF_INVADERS = NUM_OF_INVADERS_ROWS * NUM_OF_INVADERS_COLUMNS;
-    private static final int NUM_OF_LIVES = 3;
+    private static final int NUM_OF_LIVES = 3333;
     private static final int FLYING_SAUCER_TIMEOUT = 10000;
     // The max number of bullets currently shot
     private final int MAX_INVADER_BULLETS = 10;
@@ -76,6 +91,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private int screenX;
     private int screenY;
 
+    private int selectedSpecialInvader = -1;
     // The players ship
     private PlayerShip playerShip;
 
@@ -110,6 +126,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
 
     private Timer saucerTimer;
+    private Timer specialInvaderTimer;
     private FlyingSaucer flyingSaucer = null;
 
     // The score
@@ -146,7 +163,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         // Initialize ourHolder and paint objects
         ourHolder = getHolder();
         paint = new Paint();
-
         screenX = x;
         screenY = y;
 
@@ -222,9 +238,11 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         // Reset the menace level
         menaceInterval = 1000;
         // Make a new player space ship
-        playerShip = new PlayerShip(context, screenX, screenY);
+        playerShip = new PlayerShip(context, screenX, screenY,gameLevel);
         if(started){
             relaunchFlyingSaucer();
+            specialInvaderTimer = new Timer();
+            startSpecialInvader(true);
         }
 
         // Initialize the shipBullets array
@@ -345,6 +363,10 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         playSoundLoud(won ? victorySoundID : loosingSoundID);
         paused = true;
         killFlyingSaucer();
+        if(specialInvaderTimer != null){
+            specialInvaderTimer.cancel();
+            specialInvaderTimer = null;
+        }
     }
     private void killFlyingSaucer(){
         if(flyingSaucer != null){
@@ -352,6 +374,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
         flyingSaucer = null;
     }
+
     private void update(){
 
         // Did an invader bump into the side of the screen
@@ -451,6 +474,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
                     for (int j = 0; j < NUM_OF_INVADERS; j++) {
                         if (invaders[j].isAlive()) {
                             if (RectF.intersects(currBullet.getRect(), invaders[j].getRect())) {
+                                if(invaders[j].isSpecial()){
+                                    lives++;
+                                }
                                 invaders[j].kill();
                                 numVisibleInvaders--;
                                 playSound(invaderExplodeID);
@@ -515,6 +541,42 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
     }
 
+    private void startSpecialInvader(boolean first){
+        if(paused){
+            return;
+        }
+        if(!first){
+            Random generator = new Random();
+            int res  = generator.nextInt((int)Math.round(numVisibleInvaders));
+            for(int i = 0,invader = 0 ; i < invaders.length; i++ ){
+                if (invaders[i].isAlive()) {
+                    if(invader == res){
+                        res = i;
+                        break;
+                    }
+                    invader++;
+                }
+            }
+            if(res < invaders.length)
+            {
+                invaders[res].setSpecial(true);
+                selectedSpecialInvader = res;
+            }
+        }
+        specialInvaderTimer.schedule(new StopSpecialInvaderTimerTask(), 2000 + (10 - gameLevel) * 500);
+    }
+
+    private void stopSpecialInvader(){
+        if(paused){
+            return;
+        }
+        if(selectedSpecialInvader >= 0){
+            invaders[selectedSpecialInvader].setSpecial(false);
+        }
+        selectedSpecialInvader = -1;
+        specialInvaderTimer.schedule(new StartSpecialInvaderTimerTask(),12000);
+    }
+
     private void startFlyingSaucer(){
         if(paused){
             return;
@@ -556,10 +618,16 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             // Draw the invaders
             for(int i = 0; i < NUM_OF_INVADERS; i++){
                 if(invaders[i].isAlive()) {
+
+                    Paint invaderPaint = paint;
+                    if(i == selectedSpecialInvader){
+                        invaderPaint = new Paint();
+                        invaderPaint.setAlpha(65);
+                    }
                     if(uhOrOh) {
-                        canvas.drawBitmap(invaders[i].getBitmap(), invaders[i].getX(), invaders[i].getY(), paint);
+                        canvas.drawBitmap(invaders[i].getBitmap(), invaders[i].getX(), invaders[i].getY(), invaderPaint);
                     }else{
-                        canvas.drawBitmap(invaders[i].getBitmap2(), invaders[i].getX(), invaders[i].getY(), paint);
+                        canvas.drawBitmap(invaders[i].getBitmap2(), invaders[i].getX(), invaders[i].getY(), invaderPaint);
                     }
                 }
             }
@@ -616,6 +684,9 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // shutdown our thread.
     public void pause() {
         playing = false;
+        paused = true;
+        killFlyingSaucer();
+        specialInvaderTimer.cancel();
         try {
             gameThread.join();
         } catch (InterruptedException e) {
@@ -624,10 +695,14 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
 
     }
 
+    public void stop(){
+        pause();
+    }
     // If SpaceInvadersActivity is started then
     // start our thread.
     public void resume() {
         playing = true;
+        paused = true;
         gameThread = new Thread(this);
         gameThread.start();
     }

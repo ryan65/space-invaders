@@ -100,4 +100,9 @@ public class SpaceInvadersActivity extends Activity {
         spaceInvadersView.pause();
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        spaceInvadersView.stop();
+    }
 }

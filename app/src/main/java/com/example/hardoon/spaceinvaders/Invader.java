@@ -40,6 +40,7 @@ public class Invader {
     public final int RIGHT = 2;
 
 
+    private boolean isSpecial = false;
     // Is the ship moving and in which direction
     private int invaderMoving = RIGHT;
 
@@ -169,4 +170,12 @@ public class Invader {
 
         return false;
     }
+    public void setSpecial(boolean b){
+        isSpecial = b;
+    }
+
+    public boolean isSpecial(){
+        return isSpecial;
+    }
+
 }

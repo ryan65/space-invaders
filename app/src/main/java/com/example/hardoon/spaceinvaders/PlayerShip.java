@@ -40,7 +40,7 @@ public class PlayerShip {
     // This the the constructor method
     // When we create an object from this class we will pass
     // in the screen width and height
-    public PlayerShip(Context context, int screenX, int screenY){
+    public PlayerShip(Context context, int screenX, int screenY,int gameLevel){
 
         _screenX = screenX;
         // Initialize a blank RectF
@@ -53,7 +53,7 @@ public class PlayerShip {
         x = screenX / 2;
         y = screenY - height - 5;
         // Initialize the bitmap
-        bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.playership);
+        bitmap = BitmapFactory.decodeResource(context.getResources(), gameLevel == 9 ? R.drawable.playership9 : R.drawable.playership );
 
         // stretch the bitmap to a size appropriate for the screen resolution
         bitmap = Bitmap.createScaledBitmap(bitmap,
