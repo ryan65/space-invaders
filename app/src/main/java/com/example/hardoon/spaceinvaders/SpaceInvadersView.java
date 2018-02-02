@@ -332,8 +332,6 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         if(paused){
             startTime = System.currentTimeMillis();
             paused = false;
-            soundPool.stop(victorySoundID);
-            soundPool.stop(loosingSoundID);
             prepareNewGame(true);
         }
     }
