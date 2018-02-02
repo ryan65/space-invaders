@@ -61,7 +61,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private static final int NUM_OF_INVADERS_ROWS = 5;
     private static final int NUM_OF_INVADERS_COLUMNS = 6;
     private static final int NUM_OF_INVADERS = NUM_OF_INVADERS_ROWS * NUM_OF_INVADERS_COLUMNS;
-    private static final int NUM_OF_LIVES = 3333;
+    private static final int NUM_OF_LIVES = 3;
     private static final int FLYING_SAUCER_TIMEOUT = 10000;
     // The max number of bullets currently shot
     private final int MAX_INVADER_BULLETS = 10;
