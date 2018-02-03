@@ -63,6 +63,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     private static final int NUM_OF_INVADERS = NUM_OF_INVADERS_ROWS * NUM_OF_INVADERS_COLUMNS;
     private static final int NUM_OF_LIVES = 3;
     private static final int FLYING_SAUCER_TIMEOUT = 10000;
+    private static final int SPECIAL_INVADER_TIMEOUT = 12000;
     // The max number of bullets currently shot
     private final int MAX_INVADER_BULLETS = 10;
 
@@ -340,6 +341,14 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         saucerTimer.schedule(new SaucerTimerTask(), FLYING_SAUCER_TIMEOUT);
     }
 
+    private void cleanupAndPause(){
+        paused = true;
+        killFlyingSaucer();
+        if(specialInvaderTimer != null){
+            specialInvaderTimer.cancel();
+            specialInvaderTimer = null;
+        }
+    }
     private void gameEnded(Boolean won){
         gameTime = System.currentTimeMillis() - startTime;
         if(won){
@@ -359,12 +368,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
         }
         lastResultWon = won;
         playSoundLoud(won ? victorySoundID : loosingSoundID);
-        paused = true;
-        killFlyingSaucer();
-        if(specialInvaderTimer != null){
-            specialInvaderTimer.cancel();
-            specialInvaderTimer = null;
-        }
+        cleanupAndPause();
     }
     private void killFlyingSaucer(){
         if(flyingSaucer != null){
@@ -572,7 +576,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             invaders[selectedSpecialInvader].setSpecial(false);
         }
         selectedSpecialInvader = -1;
-        specialInvaderTimer.schedule(new StartSpecialInvaderTimerTask(),12000);
+        specialInvaderTimer.schedule(new StartSpecialInvaderTimerTask(),SPECIAL_INVADER_TIMEOUT);
     }
 
     private void startFlyingSaucer(){
@@ -682,9 +686,7 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
     // shutdown our thread.
     public void pause() {
         playing = false;
-        paused = true;
-        killFlyingSaucer();
-        specialInvaderTimer.cancel();
+        cleanupAndPause();
         try {
             gameThread.join();
         } catch (InterruptedException e) {
