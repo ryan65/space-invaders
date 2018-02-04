@@ -43,8 +43,6 @@ public class Invader {
     private boolean isSpecial = false;
     // Is the ship moving and in which direction
     private int invaderMoving = RIGHT;
-
-    boolean isVisible;
     public Invader(Context context, int row, int column, int screenX, int screenY, int gameLevel) {
 
         // Initialize a blank RectF
@@ -53,7 +51,6 @@ public class Invader {
         length = screenX / 20;
         height = screenY / 20;
         this.gameLevel = gameLevel;
-        isVisible = true;
 
         int padding = screenX / 25;
 
@@ -80,11 +77,15 @@ public class Invader {
         invaderSpeed = 40 + Math.max(0, 8 * (gameLevel - 5));
     }
     public void kill(){
-        isVisible = false;
+        //cleanup ?
     }
 
-    public boolean isAlive(){
-        return isVisible;
+    public boolean checkIfHit(RectF bullet){
+        if(RectF.intersects(bullet, getRect())){
+            kill();
+            return true;
+        }
+        return false;
     }
 
     public RectF getRect(){
@@ -143,7 +144,7 @@ public class Invader {
     }
     private boolean winTheLottery(int min, int incr, float ratioVisibleInvaders){
         int randomNumber = -1;
-        int seed = (int)(Math.round(min + incr * (9 - gameLevel)) * (0.4 + 0.6 * ratioVisibleInvaders)) ;
+        int seed = (int)(Math.round(min + incr * (9 - gameLevel)) * (0.3 + 0.7 * ratioVisibleInvaders)) ;
         randomNumber = generator.nextInt(seed);
         return randomNumber == 0;
     }
