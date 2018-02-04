@@ -39,7 +39,7 @@ public class Bullet {
         return  rect;
     }
 
-    public boolean getStatus(){
+    public boolean isActive(){
         return isActive;
     }
 

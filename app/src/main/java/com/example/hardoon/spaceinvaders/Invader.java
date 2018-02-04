@@ -144,7 +144,7 @@ public class Invader {
     }
     private boolean winTheLottery(int min, int incr, float ratioVisibleInvaders){
         int randomNumber = -1;
-        int seed = (int)(Math.round(min + incr * (9 - gameLevel)) * (0.3 + 0.7 * ratioVisibleInvaders)) ;
+        int seed = (int)(Math.round(min + incr * (9 - gameLevel)) * (0.35 + 0.65 * ratioVisibleInvaders)) ;
         randomNumber = generator.nextInt(seed);
         return randomNumber == 0;
     }
