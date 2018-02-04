@@ -662,11 +662,15 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             if (paused && lastResultWon != null) {
                 paint.setTextSize(100);
                 paint.setColor((lastResultWon ? Color.GREEN : Color.RED));
+                String message;
                 if (lastResultWon && gameLevel == 9) {
-                    canvas.drawText("YOU'RE THE MASTER!!", 10, screenY / 2, paint);
+                     message = "YOU'RE THE MASTER!!";
                 } else {
-                    canvas.drawText("GAME OVER " + (lastResultWon ? "CHAMP" : "LOOSER!!!"), 10, screenY / 2, paint);
+                    message = lastResultWon ? "YOU WIN !" : "GAME OVER LOOSER!!!";
                 }
+                float textWidth = paint.measureText(message);
+                canvas.drawText(message, (screenX - textWidth)/2,screenY / 2, paint);
+
             }
 
             // Draw everything to the screen
