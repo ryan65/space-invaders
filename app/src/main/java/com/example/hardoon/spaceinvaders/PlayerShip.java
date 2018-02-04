@@ -50,7 +50,7 @@ public class PlayerShip {
         height = screenY/10;
 
         // Start ship in roughly the screen centre
-        x = screenX / 2;
+        x = (screenX - length)/2;
         y = screenY - height - 5;
         // Initialize the bitmap
         bitmap = BitmapFactory.decodeResource(context.getResources(), gameLevel == 9 ? R.drawable.playership9 : R.drawable.playership );

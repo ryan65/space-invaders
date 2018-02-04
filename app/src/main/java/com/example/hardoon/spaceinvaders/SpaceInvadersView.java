@@ -610,6 +610,15 @@ public class SpaceInvadersView  extends SurfaceView implements Runnable{
             paint.setColor(colorShipAreaPressed);
             paint.setStrokeWidth(8);
             canvas.drawLine( screenX/2,getPlayerShipAreaTop(), screenX/2, screenY, paint);
+            float tipYBaselineLocation = screenY  -  (screenY - getPlayerShipAreaTop()) / 4;
+            paint.setTextSize((screenY - getPlayerShipAreaTop()) /2 );
+            String leftStr = "<< Move Left";
+            String rightStr = "Move Right >>";
+            float widthLeft = paint.measureText(leftStr);
+            canvas.drawText(leftStr,(screenX/2 - widthLeft)/2, tipYBaselineLocation , paint);
+            float widthRight = paint.measureText(rightStr);
+            canvas.drawText("Move Right >>", screenX/2 + (screenX/2 - widthRight)/2, tipYBaselineLocation , paint);
+
 
             // Choose the brush color for drawing
             paint.setColor(Color.argb(255,  255, 255, 255));
