@@ -97,6 +97,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     // The players ship
     private PlayerShip playerShip;
 
+    private int endSoundStream = 0;
     // The player's bullet
     private Bullet[] shipBullets = new Bullet[NUM_OF_SHIP_BULLETS];
 
@@ -222,12 +223,20 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         return gameLevel > 0;
     }
 
-    private void playSound(int id) {
-        soundPool.play(id, DEFAULT_VOLUME, DEFAULT_VOLUME, 0, 0, 1);
+    private int playSound(int id) {
+        return soundPool.play(id, DEFAULT_VOLUME, DEFAULT_VOLUME, 0, 0, 1);
     }
 
-    private void playSoundLoud(int id) {
-        soundPool.play(id, 0.90f, 0.90f, 5, 0, 1);
+    private int playSoundLoud(int id) {
+        return soundPool.play(id, 0.90f, 0.90f, 5, 0, 1);
+    }
+
+    private void cleanAllSounds(){
+
+        if(endSoundStream != 0){
+            soundPool.stop(endSoundStream);
+            endSoundStream = 0;
+        }
     }
 
     private void prepareNewGame(boolean started) {
@@ -237,6 +246,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         // Here we will initialize all the game objects
         // Reset the menace level
         menaceInterval = 1000;
+        cleanAllSounds();
 
         invaders = new ArrayList<>(INITIAL_NUM_OF_INVADERS);
         // Make a new player space ship
@@ -344,13 +354,17 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
         saucerTimer.schedule(new SaucerTimerTask(), FLYING_SAUCER_TIMEOUT);
     }
 
-    private void cleanupAndPause() {
+    private void cleanupAndPause(boolean fullCleanup) {
         paused = true;
         killFlyingSaucer();
         if (specialInvaderTimer != null) {
             specialInvaderTimer.cancel();
             specialInvaderTimer = null;
         }
+        if(fullCleanup) {
+            cleanAllSounds();
+        }
+
     }
 
     private void gameEnded(Boolean won) {
@@ -371,8 +385,8 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
 
         }
         lastResultWon = won;
-        playSoundLoud(won ? victorySoundID : loosingSoundID);
-        cleanupAndPause();
+        endSoundStream = playSoundLoud(won ? victorySoundID : loosingSoundID);
+        cleanupAndPause(false);
     }
 
     private void killFlyingSaucer() {
@@ -686,7 +700,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
     // shutdown our thread.
     public void pause() {
         playing = false;
-        cleanupAndPause();
+        cleanupAndPause(true);
         try {
             gameThread.join();
         } catch (InterruptedException e) {
