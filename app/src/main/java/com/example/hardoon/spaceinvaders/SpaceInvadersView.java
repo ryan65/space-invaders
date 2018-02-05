@@ -391,7 +391,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
 
     private void killFlyingSaucer() {
         if (flyingSaucer != null) {
-            flyingSaucer.kill();
+            flyingSaucer.kill(false);
         }
         flyingSaucer = null;
     }
@@ -481,7 +481,6 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             if (isFlyingSaucerVisible() && flyingSaucer.checkIfHit(currBullet.getRect())) {
                 score += 100;
                 currBullet.setInactive();
-                playSound(flyingSaucerHitSoundID);
                 relaunchFlyingSaucer();
                 continue;
             }
@@ -588,7 +587,7 @@ public class SpaceInvadersView extends SurfaceView implements Runnable {
             return;
         }
         killFlyingSaucer();
-        flyingSaucer = new FlyingSaucer(context, 0, 5, screenX, screenY, gameLevel, flyingSaucerMoveSoundID, soundPool);
+        flyingSaucer = new FlyingSaucer(context, 0, 5, screenX, screenY, gameLevel, flyingSaucerMoveSoundID, flyingSaucerHitSoundID,soundPool);
         flyingSaucer.advanceTo(-flyingSaucer.getLength());
     }
 

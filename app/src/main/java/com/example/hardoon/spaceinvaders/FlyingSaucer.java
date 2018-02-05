@@ -23,22 +23,19 @@ public class FlyingSaucer{
     private Bitmap bitmap2;
     private float length;
     private float height;
-
     private float x;
-
     private float y;
-
     int movingSoundStreamId;
+    int hitSoundID;
     private boolean isVisible;
     float saucerSpeed;
     SoundPool soundPool;
-
     RectF rect;
     float getX() {
         return x;
     }
 
-    public FlyingSaucer(Context context, float x, float y, int screenX, int screenY, int gameLevel, int movingSoundID, SoundPool soundPool) {
+    public FlyingSaucer(Context context, float x, float y, int screenX, int screenY, int gameLevel, int movingSoundID, int hitSoundID, SoundPool soundPool) {
 
         length = screenX / 20;
         height = screenY / 20;
@@ -65,6 +62,7 @@ public class FlyingSaucer{
         saucerSpeed = 150 + Math.max(0, 10 * (gameLevel - 5));
         // This SoundPool is deprecated but don't worry
         this.soundPool = soundPool;
+        this.hitSoundID = hitSoundID;
         movingSoundStreamId = soundPool.play(movingSoundID,0.4f,0.4f,1, -1,1);
         soundPool.stop(movingSoundID);
 
@@ -96,8 +94,11 @@ public class FlyingSaucer{
         return isVisible;
     }
 
-    public void kill(){
+    public void kill(boolean wasHit){
         isVisible = false;
+        if(wasHit){
+            soundPool.play(hitSoundID, 0.3f, 0.3f,0, 0, 1 );
+        }
         soundPool.stop(movingSoundStreamId);
     }
 
@@ -106,7 +107,7 @@ public class FlyingSaucer{
             return false;
         }
         if(RectF.intersects(bullet,rect)){
-            kill();
+            kill(true);
             return true;
         }
         return false;
