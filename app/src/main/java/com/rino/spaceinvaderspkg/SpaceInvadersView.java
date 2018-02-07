@@ -1,4 +1,4 @@
-package com.example.hardoon.spaceinvaders;
+package com.rino.spaceinvaderspkg;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -10,7 +10,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.media.AudioManager;
 import android.media.SoundPool;
-import android.support.annotation.RequiresPermission;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;

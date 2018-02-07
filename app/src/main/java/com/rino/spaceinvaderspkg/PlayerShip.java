@@ -1,4 +1,4 @@
-package com.example.hardoon.spaceinvaders;
+package com.rino.spaceinvaderspkg;
 
 import android.content.Context;
 import android.graphics.Bitmap;

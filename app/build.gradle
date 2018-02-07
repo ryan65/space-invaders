@@ -11,7 +11,7 @@ android {
     }
     compileSdkVersion 26
     defaultConfig {
-        applicationId "com.example.hardoon.spaceinvaders"
+        applicationId "rino.spaceinvaderspackage"
         minSdkVersion 15
         targetSdkVersion 26
         versionCode 1
@@ -23,7 +23,6 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            debuggable true
             signingConfig signingConfigs.config
         }
         debug {

@@ -1,4 +1,4 @@
-package com.example.hardoon.spaceinvaders;
+package com.example.hardoon.spaceinvaderspackage;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.hardoon.spaceinvaders", appContext.getPackageName());
+        assertEquals("com.example.hardoon.spaceinvaderspackage", appContext.getPackageName());
     }
 }

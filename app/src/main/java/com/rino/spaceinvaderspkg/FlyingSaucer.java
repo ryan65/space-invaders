@@ -1,17 +1,13 @@
-package com.example.hardoon.spaceinvaders;
+package com.rino.spaceinvaderspkg;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
-import android.media.AudioManager;
 import android.media.SoundPool;
 
-import java.util.Random;
-import java.util.TimerTask;
 
 /**
  * Created by hardoon on 1/23/2018.

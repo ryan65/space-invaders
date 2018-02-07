@@ -1,8 +1,6 @@
-package com.example.hardoon.spaceinvaders;
+package com.rino.spaceinvaderspkg;
 
 import android.graphics.RectF;
-
-import java.util.logging.Logger;
 
 /**
  * Created by hardoon on 1/23/2018.
